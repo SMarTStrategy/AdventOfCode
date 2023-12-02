@@ -6,7 +6,7 @@ const input = fs.createReadStream("day2.txt", "utf8")
 const rl = readline.createInterface({ input })
 
 let totalPower = 0
-let totalGames = 0
+const totalIds: number[] = []
 const invalidIds: number[] = []
 
 const maxCubes = {
@@ -17,7 +17,7 @@ const maxCubes = {
 
 type MaxColor = keyof typeof maxCubes
 
-const filterColor = (arr: string[], color: MaxColor, def: number) => {
+const parseColor = (arr: string[], color: MaxColor, def: number) => {
     const filtered = arr.filter(s => s.includes(color))
     if (filtered.length === 0) return def
     else return filtered.reduce((c, d) => c + parseInt(d.split(" ")[0]), 0)
@@ -25,11 +25,11 @@ const filterColor = (arr: string[], color: MaxColor, def: number) => {
 
 rl.on("line", line => {
     // COMMON LOGIC
-    totalGames++
+    const gameId = parseInt(line.split(":")[0].split(" ")[1])
+    totalIds.push(gameId)
     const cubeSets = line.split(": ")[1].split("; ").map(s => s.split(", "))
     // FIRST PART
-    /*const gameId = parseInt(line.split(":")[0].split(" ")[1])
-    for (let game of cubeSets) {
+    /*for (let game of cubeSets) {
         for (let set of game) {
             const [num, color] = set.split(" ")
             const max = maxCubes[color as MaxColor]
@@ -37,11 +37,16 @@ rl.on("line", line => {
         }
     }*/
     // SECOND PART
-    const minSets = cubeSets.reduce((a, b) => ({
-        red: filterColor(b, "red", a.red) > a.red ? filterColor(b, "red", a.red) : a.red,
-        green: filterColor(b, "green", a.green) > a.green ? filterColor(b, "green", a.green) : a.green,
-        blue: filterColor(b, "blue", a.blue) > a.blue ? filterColor(b, "blue", a.blue) : a.blue,
-    }), {
+    const minSets = cubeSets.reduce((a, b) => {
+        const red = parseColor(b, "red", a.red)
+        const green = parseColor(b, "green", a.green)
+        const blue = parseColor(b, "blue", a.blue)
+        return {
+            red: red > a.red ? red : a.red,
+            green: green > a.green ? green : a.green,
+            blue: blue > a.blue ? blue : a.blue,
+        }
+    }, {
         red: 0,
         green: 0,
         blue: 0,
@@ -52,8 +57,7 @@ rl.on("line", line => {
 
 rl.on("close", () => {
     // FIRST PART
-    /*const totalIds = Array.from({ length: totalGames }, (_, i) => i + 1)
-    const validIds = totalIds.filter(id => !invalidIds.includes(id))
+    /*const validIds = totalIds.filter(id => !invalidIds.includes(id))
     console.log("total:", validIds.reduce((a, b) => a + b, 0))*/
     // SECOND PART
     console.log("total:", totalPower)
